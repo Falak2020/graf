@@ -1,7 +1,15 @@
 const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const { jsPDF } = require('jspdf');
+
+const {de} = require('date-fns/locale');
+
+
+const fns = require('date-fns')
+
 const pdfGenerator = require('pdfkit')
 const fs = require('fs');
+const { DH_NOT_SUITABLE_GENERATOR } = require('constants');
+
 
 const width = 1000;   // define width and height of canvas 
 const height = 1000;   
@@ -10,74 +18,39 @@ const chartCallback = (ChartJS) => {
 };
 const canvasRenderService = new ChartJSNodeCanvas({width, height, chartCallback});
 
+//const datapoints = Array.from(Array(100).keys())
 
 
-const createImage = async () => {
+const newlabels = fns.eachDayOfInterval({
+  start: new Date(2019,00,01),
+  end: new Date(2019,03,31)
+})
+console.log(newlabels)
+// const datapoints = Array(newlabels.length).fill().map(() => Math.round(Math.random() * 500))
 
-    const data = {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun','ttt'],
-        datasets: [{
-          label: 'Weekly Sales',
-          data: [10, 12, 6, 9, 12, 30, 9,9],
-          backgroundColor: [
-            'rgba(255, 26, 104, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-            'rgba(0, 0, 0, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-          ],
-          borderColor: [
-            'rgba(255, 26, 104, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)',
-            'rgba(0, 0, 0, 1)',
-            'rgba(255, 159, 64, 1)',
-             
-          ],
-          borderWidth: 1
-        }]
-      };
+const createImage = async (req) => {
   
-      // config 
-      const config = {
-        type: 'bar',
-        data,
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      };
-  
-   let theOutput = new pdfGenerator()
-   const dataUrl = await canvasRenderService.renderToDataURL(config); // converts chart to image
-    //console.log(dataUrl)
-    const image = await canvasRenderService.renderToBuffer(config);
-    fs.writeFileSync('./tmp.png',image)
+    let number = Math.random();
+    const dataUrl = await canvasRenderService.renderToDataURL(req); // converts chart to image
+    const image = await canvasRenderService.renderToBuffer(req);
+    fs.writeFileSync('./images/tmp'+number+'.png',image)
     let pdf = new jsPDF();
     pdf.setFontSize(20)
     pdf.addImage(dataUrl,'JPEG',15,15,150,150)
 
-    pdf.save('chart.pdf')
+   // pdf.save('chart'+number+'.pdf')
 
-    theOutput.pipe(fs.createWriteStream('TestDocument.pdf'))
+    /* theOutput.pipe(fs.createWriteStream('TestDocument.pdf'))
     theOutput.image('tmp.png', {
         fit: [300, 300],
         align: 'center',
         valign: 'center'
       });
     
-    theOutput.end()
-   return dataUrl;
+    theOutput.end() */
+   return req;
 };
+
 
 module.exports = {
 createImage   //for exporting to another file
